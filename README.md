@@ -59,12 +59,30 @@ aligned).
 
 Then launch via **Cmd+Space → "DevTool"**.
 
+## Tests
+
+```bash
+./run-tests.sh
+```
+
+`run-tests.sh` compiles `dev.swift` (with the GUI bootstrap stripped via
+`-DTESTING`) together with `Tests/main.swift` into a self-contained test binary
+and runs it. It uses only the Command Line Tools toolchain — **no Xcode or
+XCTest required** — and exits non-zero if any assertion fails.
+
+The suite covers the headlessly-testable logic: menu-row formatting
+(`devStateDot` / `devStateLabel` / `devPaddedName`), the `DevProcess.menuAction`
+toggle behavior, `onStateChange` callbacks, process name constants, and
+`WakeProcess` state/assertion lifecycle. GUI-only paths (global hotkey monitor,
+subprocess servers) are intentionally not exercised.
+
 ## Adding a new process
 
 1. Add a class conforming to `DevProcess` in `dev.swift`.
 2. Register it in the `processes` array in `AppDelegate.applicationDidFinishLaunching`.
 3. Optionally add its `name` to the `autoStart` set.
 4. Run `./build.sh` and relaunch.
+5. Add assertions to `Tests/main.swift` and run `./run-tests.sh`.
 
 ## Notes / gotchas
 

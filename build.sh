@@ -10,8 +10,11 @@ sleep 1
 # Ensure app structure
 mkdir -p "$APP_PATH/Contents/MacOS"
 
-# Compile directly into the app bundle
+# Compile directly into the app bundle.
+# -parse-as-library: the entry point is the @main DevToolApp struct in dev.swift
+# (not top-level code), which keeps the logic unit-testable. See run-tests.sh.
 swiftc "$SCRIPT_DIR/dev.swift" \
+  -parse-as-library \
   -o "$APP_PATH/Contents/MacOS/DevTool" \
   -framework Cocoa -framework IOKit
 

@@ -24,6 +24,30 @@ extension DevProcess {
 }
 
 // ============================================================
+// MARK: - Menu Row Formatting (pure, testable)
+// ============================================================
+
+/// Status dot for a process state. "on" -> green, anything else -> red.
+func devStateDot(_ state: String) -> String {
+    state == "on" ? "🟢" : "🔴"
+}
+
+/// Human label for a process state. Unknown states render as "off".
+func devStateLabel(_ state: String) -> String {
+    switch state {
+    case "on":    return "on"
+    case "error": return "error"
+    default:      return "off"
+    }
+}
+
+/// Right-pad a process name to `width` for monospace column alignment.
+/// Never truncates: a name longer than `width` is returned unchanged.
+func devPaddedName(_ name: String, width: Int) -> String {
+    name.padding(toLength: max(width, name.count), withPad: " ", startingAt: 0)
+}
+
+// ============================================================
 // MARK: - Wake Process
 // ============================================================
 
@@ -273,15 +297,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func updateMenuItem(index: Int) {
         let proc = processes[index]
-        let dot: String
-        let label: String
-        switch proc.state {
-        case "on":    dot = "🟢"; label = "on"
-        case "error": dot = "🔴"; label = "error"
-        default:      dot = "🔴"; label = "off"
-        }
+        let dot = devStateDot(proc.state)
+        let label = devStateLabel(proc.state)
         let mono = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
-        let paddedName = proc.name.padding(toLength: maxNameLen, withPad: " ", startingAt: 0)
+        let paddedName = devPaddedName(proc.name, width: maxNameLen)
         let result = NSMutableAttributedString()
         result.append(NSAttributedString(string: paddedName, attributes: [.font: mono]))
         result.append(NSAttributedString(string: " \(dot) ", attributes: [.font: NSFont.systemFont(ofSize: 13)]))
@@ -299,8 +318,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-let app = NSApplication.shared
-app.setActivationPolicy(.accessory)
-let delegate = AppDelegate()
-app.delegate = delegate
-app.run()
+// The GUI bootstrap is an @main declaration (not top-level code) so it can be
+// excluded when compiling the test runner (-DTESTING); the process/formatting
+// logic above is then unit-testable without launching the menu bar app.
+// Built normally with `swiftc -parse-as-library` (see build.sh).
+#if !TESTING
+@main
+struct DevToolApp {
+    static func main() {
+        let app = NSApplication.shared
+        app.setActivationPolicy(.accessory)
+        let delegate = AppDelegate()
+        app.delegate = delegate
+        app.run()
+    }
+}
+#endif

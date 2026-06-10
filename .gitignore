@@ -1,0 +1,16 @@
+# Build artifacts
+build/
+dist/
+
+# macOS
+.DS_Store
+*.swp
+
+# Logs
+*.log
+*.err
+
+# IDE / tooling
+.vscode/
+.idea/
+.claude/
